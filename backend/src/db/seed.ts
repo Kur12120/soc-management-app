@@ -15,6 +15,20 @@ async function initDb() {
     await pool.query(tasksSql);
   }
 
+  
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS incident_comments (
+        id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        incident_id UUID NOT NULL REFERENCES incidents(id) ON DELETE CASCADE,
+        user_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        content     TEXT NOT NULL,
+        created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `);
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_incident_comments_incident_id
+        ON incident_comments(incident_id)
+    `);
   console.log("Database initialized");
 }
 
