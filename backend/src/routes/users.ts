@@ -15,6 +15,7 @@ router.get("/", requireAuth, requireRole(["admin"]), async (_req: Request, res: 
 });
 
 router.post("/", requireAuth, requireRole(["admin"]), async (req: Request, res: Response) => {
+  try {
   const { fullName, email, password, role, teamId, authProvider } = req.body as {
     fullName?: string; email?: string; password?: string;
     role?: string; teamId?: string | null; authProvider?: string;
