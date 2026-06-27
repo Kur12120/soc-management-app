@@ -52,9 +52,9 @@ router.post("/", requireAuth, async (req: Request, res: Response) => {
   const result = await pool.query(
     `INSERT INTO incidents (id, title, description, severity, status, assigned_user_id, created_by, created_at)
      VALUES ($1, $2, $3, $4, $5, $6, $7, NOW()) RETURNING *`,
-    [id, title, description, severity || "medium", status || "open", assignedUserId || null, ((((req.user!.userId as string) as string) as string) as string)]
+    [id, title, description, severity || "medium", status || "open", assignedUserId || null, (((((req.user as any).userId as string) as string) as string) as string)]
   );
-  await createAuditLog({ action: "incident_created", actorUserId: ((((req.user!.userId as string) as string) as string) as string), targetType: "incident", targetId: id, details: "Created incident" });
+  await createAuditLog({ action: "incident_created", actorUserId: (((((req.user as any).userId as string) as string) as string) as string), targetType: "incident", targetId: id, details: "Created incident" });
   res.status(201).json(result.rows[0]);
 });
 
@@ -66,7 +66,7 @@ router.put("/:id", requireAuth, async (req: Request, res: Response) => {
     "UPDATE incidents SET title = COALESCE($1, title), description = COALESCE($2, description), severity = COALESCE($3, severity), status = COALESCE($4, status), assigned_user_id = $5 WHERE id = $6",
     [title, description, severity, status, assignedUserId || null, req.params.id]
   );
-  await createAuditLog({ action: "incident_updated", actorUserId: ((((req.user!.userId as string) as string) as string) as string), targetType: "incident", targetId: req.params.id, details: "Updated incident" });
+  await createAuditLog({ action: "incident_updated", actorUserId: (((((req.user as any).userId as string) as string) as string) as string), targetType: "incident", targetId: req.params.id, details: "Updated incident" });
   res.json({ message: "Updated" });
 });
 
@@ -78,13 +78,13 @@ router.patch("/:id", requireAuth, async (req: Request, res: Response) => {
     "UPDATE incidents SET status = COALESCE($1, status), assigned_user_id = $2 WHERE id = $3",
     [status || null, assignedUserId !== undefined ? (assignedUserId || null) : null, req.params.id]
   );
-  await createAuditLog({ action: "incident_updated", actorUserId: ((((req.user!.userId as string) as string) as string) as string), targetType: "incident", targetId: req.params.id, details: "Incident updated" });
+  await createAuditLog({ action: "incident_updated", actorUserId: (((((req.user as any).userId as string) as string) as string) as string), targetType: "incident", targetId: req.params.id, details: "Incident updated" });
   res.json({ message: "Updated" });
 });
 
 router.delete("/:id", requireAuth, requireRole(["admin"]), async (req: Request, res: Response) => {
   await pool.query("DELETE FROM incidents WHERE id = $1", [req.params.id]);
-  await createAuditLog({ action: "incident_deleted", actorUserId: ((((req.user!.userId as string) as string) as string) as string), targetType: "incident", targetId: req.params.id, details: "Deleted" });
+  await createAuditLog({ action: "incident_deleted", actorUserId: (((((req.user as any).userId as string) as string) as string) as string), targetType: "incident", targetId: req.params.id, details: "Deleted" });
   res.json({ message: "Deleted" });
 });
 
@@ -107,7 +107,7 @@ router.post("/:id/comments", requireAuth, async (req: Request, res: Response) =>
   const result = await pool.query(
     `INSERT INTO incident_comments (id, incident_id, user_id, content, created_at)
      VALUES ($1, $2, $3, $4, NOW()) RETURNING *`,
-    [id, req.params.id, ((((req.user!.userId as string) as string) as string) as string), content.trim()]
+    [id, req.params.id, (((((req.user as any).userId as string) as string) as string) as string), content.trim()]
   );
   res.status(201).json(result.rows[0]);
 });

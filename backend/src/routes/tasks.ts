@@ -53,11 +53,11 @@ router.post("/", requireAuth, requireRole(["admin"]), async (req: Request, res: 
   const result = await pool.query(
     `INSERT INTO tasks (id, title, description, priority, status, assigned_user_id, due_date, created_by, created_at)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW()) RETURNING *`,
-    [id, title, description || null, priority || "medium", "pending", assignedUserId || null, dueDate || null, ((((req.user!.userId as string) as string) as string) as string)]
+    [id, title, description || null, priority || "medium", "pending", assignedUserId || null, dueDate || null, (((((req.user as any).userId as string) as string) as string) as string)]
   );
-  await createAuditLog({ action: "task_created", actorUserId: ((((req.user!.userId as string) as string) as string) as string), targetType: "task", targetId: id, details: "Created task" });
+  await createAuditLog({ action: "task_created", actorUserId: (((((req.user as any).userId as string) as string) as string) as string), targetType: "task", targetId: id, details: "Created task" });
   if (assignedUserId) {
-    await createNotification({ userId: assignedUserId, message: `You have been assigned a new task: ${title}`});
+    await createNotification({ userId: assignedUserId, title: 'Task assigned', message: `You have been assigned a new task: ${title}`});
   }
   res.status(201).json(result.rows[0]);
 });
@@ -70,7 +70,7 @@ router.patch("/:id", requireAuth, async (req: Request, res: Response) => {
     "UPDATE tasks SET status = COALESCE($1, status), assigned_user_id = $2 WHERE id = $3",
     [status || null, assignedUserId !== undefined ? (assignedUserId || null) : null, req.params.id]
   );
-  await createAuditLog({ action: "task_updated", actorUserId: ((((req.user!.userId as string) as string) as string) as string), targetType: "task", targetId: req.params.id, details: "Task updated" });
+  await createAuditLog({ action: "task_updated", actorUserId: (((((req.user as any).userId as string) as string) as string) as string), targetType: "task", targetId: req.params.id, details: "Task updated" });
   res.json({ message: "Updated" });
 });
 
@@ -78,7 +78,7 @@ router.patch("/:id/status", requireAuth, async (req: Request, res: Response) => 
   const { status } = req.body as { status?: string };
   if (!status) { res.status(400).json({ message: "Status required" }); return; }
   await pool.query("UPDATE tasks SET status = $1 WHERE id = $2", [status, req.params.id]);
-  await createAuditLog({ action: "task_status_updated", actorUserId: ((((req.user!.userId as string) as string) as string) as string), targetType: "task", targetId: req.params.id, details: `Status: ${status}` });
+  await createAuditLog({ action: "task_status_updated", actorUserId: (((((req.user as any).userId as string) as string) as string) as string), targetType: "task", targetId: req.params.id, details: `Status: ${status}` });
   res.json({ message: "Updated" });
 });
 
@@ -90,13 +90,13 @@ router.put("/:id", requireAuth, requireRole(["admin"]), async (req: Request, res
     "UPDATE tasks SET title = COALESCE($1, title), description = COALESCE($2, description), priority = COALESCE($3, priority), status = COALESCE($4, status), assigned_user_id = $5, due_date = $6 WHERE id = $7",
     [title, description, priority, status, assignedUserId || null, dueDate || null, req.params.id]
   );
-  await createAuditLog({ action: "task_updated", actorUserId: ((((req.user!.userId as string) as string) as string) as string), targetType: "task", targetId: req.params.id, details: "Task updated" });
+  await createAuditLog({ action: "task_updated", actorUserId: (((((req.user as any).userId as string) as string) as string) as string), targetType: "task", targetId: req.params.id, details: "Task updated" });
   res.json({ message: "Updated" });
 });
 
 router.delete("/:id", requireAuth, requireRole(["admin"]), async (req: Request, res: Response) => {
   await pool.query("DELETE FROM tasks WHERE id = $1", [req.params.id]);
-  await createAuditLog({ action: "task_deleted", actorUserId: ((((req.user!.userId as string) as string) as string) as string), targetType: "task", targetId: req.params.id, details: "Deleted" });
+  await createAuditLog({ action: "task_deleted", actorUserId: (((((req.user as any).userId as string) as string) as string) as string), targetType: "task", targetId: req.params.id, details: "Deleted" });
   res.json({ message: "Deleted" });
 });
 
@@ -119,7 +119,7 @@ router.post("/:id/comments", requireAuth, async (req: Request, res: Response) =>
   const result = await pool.query(
     `INSERT INTO task_comments (id, task_id, user_id, content, created_at)
      VALUES ($1, $2, $3, $4, NOW()) RETURNING *`,
-    [id, req.params.id, ((((req.user!.userId as string) as string) as string) as string), content.trim()]
+    [id, req.params.id, (((((req.user as any).userId as string) as string) as string) as string), content.trim()]
   );
   res.status(201).json(result.rows[0]);
 });

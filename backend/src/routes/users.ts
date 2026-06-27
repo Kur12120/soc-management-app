@@ -34,7 +34,7 @@ router.post("/", requireAuth, requireRole(["admin"]), async (req: Request, res: 
     "INSERT INTO users (id, full_name, email, password_hash, role, team_id, auth_provider) VALUES ($1,$2,$3,$4,$5,$6,$7)",
     [id, fullName, email, passwordHash, role, teamId || null, authProvider || "local"]
   );
-  await createAuditLog({ action: "user_created", actorUserId: ((((req.user!.userId as string) as string) as string) as string), targetType: "user", targetId: id, details: `Created user ${email}` });
+  await createAuditLog({ action: "user_created", actorUserId: (((((req.user as any).userId as string) as string) as string) as string), targetType: "user", targetId: id, details: `Created user ${email}` });
   res.status(201).json({ id, fullName, email, role, teamId: teamId || null, authProvider: authProvider || "local" });
 });
 
@@ -44,14 +44,14 @@ router.put("/:id", requireAuth, requireRole(["admin"]), async (req: Request, res
     "UPDATE users SET full_name = COALESCE($1, full_name), role = COALESCE($2, role), team_id = $3 WHERE id = $4",
     [fullName, role, teamId || null, req.params.id]
   );
-  await createAuditLog({ action: "user_updated", actorUserId: ((((req.user!.userId as string) as string) as string) as string), targetType: "user", targetId: req.params.id, details: "User updated" });
+  await createAuditLog({ action: "user_updated", actorUserId: (((((req.user as any).userId as string) as string) as string) as string), targetType: "user", targetId: req.params.id, details: "User updated" });
   res.json({ message: "Updated" });
 });
 
 router.delete("/:id", requireAuth, requireRole(["admin"]), async (req: Request, res: Response) => {
-  if (req.params.id === ((((req.user!.userId as string) as string) as string) as string)) { res.status(400).json({ message: "Cannot delete yourself" }); return; }
+  if (req.params.id === (((((req.user as any).userId as string) as string) as string) as string)) { res.status(400).json({ message: "Cannot delete yourself" }); return; }
   await pool.query("DELETE FROM users WHERE id = $1", [req.params.id]);
-  await createAuditLog({ action: "user_deleted", actorUserId: ((((req.user!.userId as string) as string) as string) as string), targetType: "user", targetId: req.params.id, details: "User deleted" });
+  await createAuditLog({ action: "user_deleted", actorUserId: (((((req.user as any).userId as string) as string) as string) as string), targetType: "user", targetId: req.params.id, details: "User deleted" });
   res.json({ message: "Deleted" });
 });
 
@@ -65,7 +65,7 @@ router.patch("/:id/team", requireAuth, requireRole(["admin"]), async (req: Reque
   );
   await createAuditLog({
     action: "user_team_updated",
-    actorUserId: ((((req.user!.userId as string) as string) as string) as string),
+    actorUserId: (((((req.user as any).userId as string) as string) as string) as string),
     targetType: "user",
     targetId: req.params.id,
     details: `Team updated to ${teamId || "none"}`,
