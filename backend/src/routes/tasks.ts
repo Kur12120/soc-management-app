@@ -57,7 +57,7 @@ router.post("/", requireAuth, requireRole(["admin"]), async (req: Request, res: 
   );
   await createAuditLog({ action: "task_created", actorUserId: (((((req.user as any).userId as string) as string) as string) as string), targetType: "task", targetId: id, details: "Created task" });
   if (assignedUserId) {
-    await createNotification({ userId: assignedUserId, title: 'Task assigned', message: `You have been assigned a new task: ${title}`});
+    await createNotification({ title: 'Assignment', userId: assignedUserId, title: 'Task assigned', message: `You have been assigned a new task: ${title}`});
   }
   res.status(201).json(result.rows[0]);
 });
